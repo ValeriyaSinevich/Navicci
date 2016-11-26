@@ -36,7 +36,7 @@ public class Controller implements Initializable {
 
     private final int TICKS_IN_PERIOD = 30;
     private final int MILLISECONDS_IN_TICK = 10;
-    private final double EPS = 1e-18;
+    private final double EPS = 1e-6;
 
     private final ScheduledExecutorService DrawScheduler =
             Executors.newScheduledThreadPool(1);
@@ -125,7 +125,7 @@ public class Controller implements Initializable {
         }
 
         final ScheduledFuture<?> drawHandler =
-                DrawScheduler.scheduleAtFixedRate(new RunnableDrawer(), 0, 1, SECONDS);
+                DrawScheduler.scheduleAtFixedRate(new RunnableDrawer(), 0, 5, SECONDS);
 
 //        final ScheduledFuture<?> requestHandler =
 //                RequestScheduler.scheduleAtFixedRate(new RunnableRequester(), 0, 1, SECONDS);
@@ -188,6 +188,9 @@ public class Controller implements Initializable {
             }
         };
         eventFier.setOnAction(fireEvent);
+//
+//        Calc calc = new Calc();
+//        calc.run();
     }
 
     private void rotate(GraphicsContext gc, double angle, double px, double py) {
@@ -248,12 +251,14 @@ public class Controller implements Initializable {
                             Position.mult(Position.subtract(trajectory.get(1), trajectory.get(0)), deltaDistanceValue / distanceValue));
                     trajectory.remove(0);
                     trajectory.add(0, newPosition);
+                    break;
                 } else if (distanceValue < deltaDistanceValue - EPS) {
                     curTime = curTime - distanceValue/ speed;
                     trajectory.remove(0);
                 }
                 else {
                     trajectory.remove(0);
+                    break;
                 }
             }
         }
@@ -279,12 +284,34 @@ public class Controller implements Initializable {
                     }
                 }
                 System.out.println("rendered\n");
-//                eventFier.fire();
+                eventFier.fire();
                 ticks++;
             }  catch (Exception e) {
                 System.out.println("hey\n");
                 e.printStackTrace();
 //                Main.getInstance().addResult(new LinkedList<Gyro>()); // Assuming I want to know that an invocation failed
+            }
+        }
+
+    };
+
+    final class Calc implements Runnable {
+        public void run() {
+            while(true) {
+                try {
+                    Thread.sleep(500);
+                    for (Gyro g : curList) {
+                        if (g.getRoute().get(0).getFloor() != level)
+                            continue;
+                        processTrajectory(g);
+                    }
+                    System.out.println("rendered\n");
+                    eventFier.fire();
+                } catch (Exception e) {
+                    System.out.println("hey\n");
+                    e.printStackTrace();
+//                Main.getInstance().addResult(new LinkedList<Gyro>()); // Assuming I want to know that an invocation failed
+                }
             }
         }
 
