@@ -7,10 +7,15 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 public class Main extends Application {
     private static Main instance;
+
+    private Controller controller;
+
 
     final ConcurrentLinkedQueue<Object> results
             = new ConcurrentLinkedQueue<Object>();
@@ -18,7 +23,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("/sample.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/sample.fxml"));
+        GridPane root = null;
+        fxmlLoader.setRoot(root);
+        root = (GridPane)fxmlLoader.load();
+        controller = fxmlLoader.getController();
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
@@ -41,5 +50,9 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    public Controller getController() {
+        return controller;
     }
 }

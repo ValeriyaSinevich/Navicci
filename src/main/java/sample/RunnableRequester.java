@@ -29,7 +29,7 @@ final class RunnableRequester implements Runnable {
 
     public void run() {
         try {
-//            System.out.println("request\n");
+            System.out.println("request\n");
             Callable req = new Requester();
             Main.getInstance().addResult(req.call());
         }  catch (Exception e) {

@@ -30,15 +30,17 @@
           <RowConstraints maxHeight="330.0" minHeight="10.0" prefHeight="172.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Button fx:id="first" mnemonicParsing="false" text="3" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+            <Button fx:id="third" mnemonicParsing="false" text="3" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
             <Button fx:id="second" mnemonicParsing="false" text="2" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
-            <Button fx:id="third" mnemonicParsing="false" text="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+            <Button fx:id="first" mnemonicParsing="false" text="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS" />
+            <Button fx:id="eventFier" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="0.0" prefWidth="0.0" text="Button" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM" />
          </children>
       </GridPane>
       <StackPane fx:id="stackPane" prefHeight="150.0" prefWidth="200.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
          <children>
             <ImageView fx:id="map" fitHeight="387.0" fitWidth="501.0" pickOnBounds="true" preserveRatio="true" />
-            <Canvas fx:id="canvas" height="387.0" width="501.0" StackPane.alignment="CENTER" />
+            <Canvas fx:id="canvas" height="387.0" width="501.0" />
+            <!--<Canvas fx:id="canvas" height="387.0" width="501.0" StackPane.alignment="CENTER" />-->
          </children>
       </StackPane>
    </children>
