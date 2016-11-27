@@ -17,8 +17,8 @@ public class Main extends Application {
     private Controller controller;
 
 
-    final ConcurrentLinkedQueue<Object> results
-            = new ConcurrentLinkedQueue<Object>();
+    final ConcurrentLinkedQueue<List<Gyro> > results
+            = new ConcurrentLinkedQueue<List<Gyro>>();
 
 
     @Override
@@ -40,12 +40,15 @@ public class Main extends Application {
         return instance;
     }
 
-    public void addResult(Object newEl) {
+    public void addResult(List<Gyro> newEl) {
+//        System.out.println(newEl.get(0).getRoute().size());
         results.add(newEl);
     }
 
     public List<Gyro> getResult() {
-        return (List<Gyro>)results.poll();
+        List<Gyro> res =  (List<Gyro>)results.poll();
+//        System.out.println(res.get(0).getRoute().size());
+        return res;
     }
 
     public static void main(String[] args) {

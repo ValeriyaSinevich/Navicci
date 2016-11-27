@@ -16,7 +16,7 @@ public class Position {
         this.floor = floor;
     }
 
-    public final static  Double calculateDistance(Position a) {
+    public final static Double calculateDistance(Position a) {
         return Math.sqrt((a.getY()) * (a.getY()) +
                 (a.getX()) * (a.getX()));
     }

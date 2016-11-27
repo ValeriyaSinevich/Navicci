@@ -1,6 +1,8 @@
 package sample;
 
 import javafx.scene.control.Button;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
@@ -30,12 +32,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.transform.Rotate;
 
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class Controller implements Initializable {
 
     private final int TICKS_IN_PERIOD = 30;
-    private final int MILLISECONDS_IN_TICK = 10;
+    private final int MILLISECONDS_IN_TICK = 100;
     private final double EPS = 1e-6;
 
     private final ScheduledExecutorService DrawScheduler =
@@ -84,51 +87,29 @@ public class Controller implements Initializable {
 //            314.415 - y2
 
 
-    private Double scale = (393.5325 - 484.98) / (60.484129 - 60.484351);
-
-    private Position startGeo;
-    private Position startPix;
-
     private int ticks;
     private List<Gyro> curList;
 
+    private Image mapImage;
     private Image gyro;
 
 
     URL imageUrl;
 
 
-    public void mockCurList() {
-        curList = new LinkedList<Gyro>();
-        for (int i = 0; i < 1; ++i) {
-            List<Position> route = new LinkedList<>();
-            for (int j = 0; j < 5; ++j) {
-                route.add(new Position(100 + j * 20, 500, 1));
-            }
-            for (int j = 5; j < 7; ++j) {
-                route.add(new Position(100 + j * 20, 40, 2));
-            }
-            Gyro g = new Gyro();
-            g.setRoute(route);
-            g.setSpeed(1);
-            curList.add(g);
-        }
-    }
-
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
-        mockCurList();
-        startPix = new Position(60.484129, 15.418381, 0);
-        startGeo = new Position(393.5325, 220.91250000000002, 0);
+//        mockCurList();
         gc = canvas.getGraphicsContext2D();
         eventFier.setVisible(false);
         imageUrl = getClass().getResource("/1.jpg");
         try {
             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
             map.setImage(image);
+            mapImage = image;
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        level = 1;
+        level = 0;
         ticks = 0;
 
         imageUrl = getClass().getResource("/gyro.png");
@@ -139,10 +120,10 @@ public class Controller implements Initializable {
         }
 
         final ScheduledFuture<?> drawHandler =
-                DrawScheduler.scheduleAtFixedRate(new RunnableDrawer(), 0, 1, SECONDS);
+                DrawScheduler.scheduleAtFixedRate(new RunnableDrawer(), 0, 100, MILLISECONDS);
 
-//        final ScheduledFuture<?> requestHandler =
-//                RequestScheduler.scheduleAtFixedRate(new RunnableRequester(), 0, 5, SECONDS);
+        final ScheduledFuture<?> requestHandler =
+                RequestScheduler.scheduleAtFixedRate(new RunnableRequester(), 0, 3, SECONDS);
 
         changeFloor  = new EventHandler<ActionEvent>() {
             public void handle(final javafx.event.ActionEvent event) {
@@ -154,33 +135,36 @@ public class Controller implements Initializable {
                         try {
                             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
                             map.setImage(image);
-                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                            mapImage = image;
+//                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
-                        level =1;
+                        level = 0;
                         break;
                     case "second":
                         imageUrl = getClass().getResource("/2.jpg");
                         try {
                             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
                             map.setImage(image);
-                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                            mapImage = image;
+//                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
-                        level =2;
+                        level = 1;
                         break;
                     case "third":
                         imageUrl = getClass().getResource("/3.jpg");
                         try {
                             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
                             map.setImage(image);
-                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                            mapImage = image;
+//                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
-                        level = 3;
+                        level = 2;
                         break;
                 }
             }
@@ -195,12 +179,21 @@ public class Controller implements Initializable {
 
         EventHandler<ActionEvent> fireEvent = new EventHandler<ActionEvent>() {
             public void handle(final javafx.event.ActionEvent event) {
-                gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+//                gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                BufferedImage img = SwingFXUtils.fromFXImage(mapImage, null);
+                Graphics2D g2 = img.createGraphics();
+                g2.setColor(java.awt.Color.RED);
+                g2.setStroke(new BasicStroke(4));
+
                 for (Gyro g : curList) {
-                    if (g.getRoute().get(0).getFloor() != level)
+                    if (g.getRoute().get(0).getFloor() != level) {
                         continue;
-                    drawRoute(g);
+                    }
+                    drawRoute(g, g2);
                 }
+                Image imgS = SwingFXUtils.toFXImage(img, null);
+//        mapImage = imgS;
+                map.setImage(imgS);
                 System.out.println("pictured\n");
             }
         };
@@ -223,7 +216,8 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    public void drawRoute(Gyro g) {
+    public void drawRoute(Gyro g, Graphics2D g2) {
+//        System.out.println(g.getRoute().size());
 
         List<Position> route = g.getRoute();
 
@@ -231,41 +225,53 @@ public class Controller implements Initializable {
             if (route.get(i + 1).getFloor() != level) {
                 break;
             }
-            gc.setFill(Color.BLUE);
-            gc.setLineWidth(10);
-            gc.strokeLine(route.get(i).getX(), route.get(i).getY(),
-                    route.get(i + 1).getX().intValue(), route.get(i + 1).getY());
+            g2.drawLine(route.get(i).getX().intValue(), route.get(i).getY().intValue(),
+                    route.get(i + 1).getX().intValue(), route.get(i + 1).getY().intValue());
+//            gc.setFill(Color.BLUE);
+//            gc.setLineWidth(10);
+//            gc.strokeLine(route.get(i).getX(), route.get(i).getY(),
+//                    route.get(i + 1).getX(), route.get(i + 1).getY());
         }
+        g2.fillOval(route.get(0).getX().intValue() - 5, route.get(0).getY().intValue() - 5,
+                10, 10);
 
-        double angle = Math.atan2(route.get(1).getY() - route.get(0).getY(), route.get(1).getX() - route.get(0).getX());
-
-        drawRotatedImage(gyro, angle - 90, route.get(0).getX(), route.get(0).getY(), 40, 40,
-                map.getFitWidth(), map.getFitHeight());
-//        stackPane.getChildren().add(gyroCanvas);
+//        double angle = -Math.atan2(route.get(1).getY() - route.get(0).getY(), route.get(1).getX() - route.get(0).getX());
+//
+//        drawRotatedImage(gyro, angle - 90, route.get(0).getX(), route.get(0).getY(), 40, 40,
+//                map.getFitWidth(), map.getFitHeight());
+////        stackPane.getChildren().add(gyroCanvas);
     }
 
 
 
     public void processTrajectory(Gyro gyro) {
+//        System.out.println("begin");
+//        System.out.println(gyro.getRoute().size());
         List<Position> trajectory = gyro.getRoute();
-        double speed = gyro.getSpeed(); // (pixel / tick?)
+        double speed = gyro.getSpeed(); // (pixel / 100?)
+//        System.out.println(speed);
         double curTime = MILLISECONDS_IN_TICK;
         while(curTime > EPS && trajectory.size() > 1) {
             if (trajectory.get(1).getFloor() != trajectory.get(0).getFloor()) {
-
+                System.out.printf("aaa\n");
             }
             else {
                 Position distance = Position.subtract(trajectory.get(1), trajectory.get(0));
                 Double distanceValue =  Position.calculateDistance(distance);
-                Double deltaDistanceValue = speed * MILLISECONDS_IN_TICK;
+                Double deltaDistanceValue = speed;
                 if (distanceValue > deltaDistanceValue + EPS) {
                     Position newPosition = Position.sum(trajectory.get(0),
                             Position.mult(Position.subtract(trajectory.get(1), trajectory.get(0)), deltaDistanceValue / distanceValue));
-                    trajectory.remove(0);
+                    Position removed =  trajectory.remove(0);
                     trajectory.add(0, newPosition);
+//                    System.out.println("rem\n");
+//                    System.out.printf(removed.getX().toString(), removed.getY());
+//                    System.out.println("new\n");
+//                    System.out.printf(newPosition.getX().toString(), newPosition.getY());
                     break;
                 } else if (distanceValue < deltaDistanceValue - EPS) {
-                    curTime = curTime - distanceValue/ speed;
+                    curTime = curTime - distanceValue / speed * 100; //pixels in 100 millisecs
+//                    System.out.println(curTime);
                     trajectory.remove(0);
                 }
                 else {
@@ -274,24 +280,37 @@ public class Controller implements Initializable {
                 }
             }
         }
+//        System.out.println("end");
+//        System.out.println(gyro.getRoute().size());
 //        return gyro;
     }
 
-
-    private Position translateCoordinates(Position posGeo) {
-        return Position.sum(startPix, Position.mult(Position.subtract(posGeo, startGeo), scale));
-    }
 
     final class RunnableDrawer implements Runnable {
         public void run() {
             try {
                 if (ticks % TICKS_IN_PERIOD == 0) {
-//                    curList = Main.getInstance().getResult();
+                    try {
+                        if (Main.getInstance().results.size() == 0) {
+//                            System.out.println((Main.getInstance().results.size()));
+                            return;
+                        }
+                        else {
+                            curList = Main.getInstance().getResult();
+//                            System.out.println(curList.get(0).getRoute().size());
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        return;
+                    }
                 }
                 else {
+                    System.out.println(curList.size());
                     for (Gyro g : curList) {
-                        if (g.getRoute().get(0).getFloor() != level)
+                        if (g.getRoute().get(0).getFloor() != level) {
+                            System.out.println(g.getRoute().get(0).getFloor());
                             continue;
+                        }
                         processTrajectory(g);
                     }
                 }
