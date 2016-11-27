@@ -69,14 +69,25 @@ public class Controller implements Initializable {
     @FXML
     private Canvas canvas;
 
+    private GraphicsContext gc;
+
     private EventHandler<ActionEvent> changeFloor;
 
     private int level;
 
-    private Double xTranslation = 60.484129 - 876;
-    private Double yTranslation = 15.418381 - 413.0;
+//    (60.484129, 15.418381), (60.484351, 15.417935)
 
-    private Double scale = (1008.0 - 876.0) / (60.484351 - 60.484129);
+
+//    393.5325 - x1
+//            220.91250000000002 - y1
+//            484.98 - y1
+//            314.415 - y2
+
+
+    private Double scale = (393.5325 - 484.98) / (60.484129 - 60.484351);
+
+    private Position startGeo;
+    private Position startPix;
 
     private int ticks;
     private List<Gyro> curList;
@@ -106,8 +117,11 @@ public class Controller implements Initializable {
 
     public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
         mockCurList();
+        startPix = new Position(60.484129, 15.418381, 0);
+        startGeo = new Position(393.5325, 220.91250000000002, 0);
+        gc = canvas.getGraphicsContext2D();
         eventFier.setVisible(false);
-        imageUrl = getClass().getResource("/first.png");
+        imageUrl = getClass().getResource("/1.jpg");
         try {
             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
             map.setImage(image);
@@ -125,40 +139,44 @@ public class Controller implements Initializable {
         }
 
         final ScheduledFuture<?> drawHandler =
-                DrawScheduler.scheduleAtFixedRate(new RunnableDrawer(), 0, 5, SECONDS);
+                DrawScheduler.scheduleAtFixedRate(new RunnableDrawer(), 0, 1, SECONDS);
 
 //        final ScheduledFuture<?> requestHandler =
-//                RequestScheduler.scheduleAtFixedRate(new RunnableRequester(), 0, 1, SECONDS);
+//                RequestScheduler.scheduleAtFixedRate(new RunnableRequester(), 0, 5, SECONDS);
 
         changeFloor  = new EventHandler<ActionEvent>() {
             public void handle(final javafx.event.ActionEvent event) {
                 Button button = (Button)event.getTarget();
+                GraphicsContext gc = canvas.getGraphicsContext2D();
                 switch (button.getId()) {
                     case "first":
-                        imageUrl = getClass().getResource("/first.png");
+                        imageUrl = getClass().getResource("/1.jpg");
                         try {
                             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
                             map.setImage(image);
+                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
                         level =1;
                         break;
                     case "second":
-                        imageUrl = getClass().getResource("/second.png");
+                        imageUrl = getClass().getResource("/2.jpg");
                         try {
                             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
                             map.setImage(image);
+                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
                         level =2;
                         break;
                     case "third":
-                        imageUrl = getClass().getResource("/third.png");
+                        imageUrl = getClass().getResource("/3.jpg");
                         try {
                             Image image = SwingFXUtils.toFXImage(ImageIO.read(imageUrl), null);
                             map.setImage(image);
+                            gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
@@ -177,7 +195,6 @@ public class Controller implements Initializable {
 
         EventHandler<ActionEvent> fireEvent = new EventHandler<ActionEvent>() {
             public void handle(final javafx.event.ActionEvent event) {
-                GraphicsContext gc = canvas.getGraphicsContext2D();
                 gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                 for (Gyro g : curList) {
                     if (g.getRoute().get(0).getFloor() != level)
@@ -188,46 +205,41 @@ public class Controller implements Initializable {
             }
         };
         eventFier.setOnAction(fireEvent);
-//
-//        Calc calc = new Calc();
-//        calc.run();
     }
 
-    private void rotate(GraphicsContext gc, double angle, double px, double py) {
+    @FXML
+    private void rotate( double angle, double px, double py) {
         Rotate r = new Rotate(angle, px, py);
         gc.setTransform(r.getMxx(), r.getMyx(), r.getMxy(), r.getMyy(), r.getTx(), r.getTy());
     }
 
-    private void drawRotatedImage(GraphicsContext gc, Image image, double angle, double tlpx,
+    @FXML
+    private void drawRotatedImage(Image image, double angle, double tlpx,
                                   double tlpy, int w, int h, double width, double height) {
         gc.save(); // saves the current state on stack, including the current transform
-        rotate(gc, angle, width / 2, height / 2);
+        rotate(angle, width / 2, height / 2);
         gc.drawImage(image, tlpx, tlpy, w, h);
         gc.restore(); // back to original state (before rotation)
     }
 
-
+    @FXML
     public void drawRoute(Gyro g) {
-        List<Position> route = g.getRoute();
 
-//        GraphicsContext gc = Main.getInstance().getController().canvas.getGraphicsContext2D();
-//        GraphicsContext gc = canvas.getGraphicsContext2D();
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        List<Position> route = g.getRoute();
 
         for (int i = 0; i < route.size() - 1; ++i) {
             if (route.get(i + 1).getFloor() != level) {
                 break;
             }
             gc.setFill(Color.BLUE);
-            gc.setLineWidth(5);
+            gc.setLineWidth(10);
             gc.strokeLine(route.get(i).getX(), route.get(i).getY(),
                     route.get(i + 1).getX().intValue(), route.get(i + 1).getY());
         }
 
         double angle = Math.atan2(route.get(1).getY() - route.get(0).getY(), route.get(1).getX() - route.get(0).getX());
-//        Canvas gyroCanvas = new Canvas(canvas.getWidth(), canvas.getHeight());
-//        GraphicsContext gyroGc = gyroCanvas.getGraphicsContext2D();
-        drawRotatedImage(gc, gyro, angle - 90, route.get(0).getX(), route.get(0).getY(), 40, 40,
+
+        drawRotatedImage(gyro, angle - 90, route.get(0).getX(), route.get(0).getY(), 40, 40,
                 map.getFitWidth(), map.getFitHeight());
 //        stackPane.getChildren().add(gyroCanvas);
     }
@@ -266,8 +278,8 @@ public class Controller implements Initializable {
     }
 
 
-    private Position translateCoordinates(Position pos) {
-        return new Position(pos.getX() - xTranslation, pos.getY() - yTranslation, pos.getFloor());
+    private Position translateCoordinates(Position posGeo) {
+        return Position.sum(startPix, Position.mult(Position.subtract(posGeo, startGeo), scale));
     }
 
     final class RunnableDrawer implements Runnable {
@@ -290,28 +302,6 @@ public class Controller implements Initializable {
                 System.out.println("hey\n");
                 e.printStackTrace();
 //                Main.getInstance().addResult(new LinkedList<Gyro>()); // Assuming I want to know that an invocation failed
-            }
-        }
-
-    };
-
-    final class Calc implements Runnable {
-        public void run() {
-            while(true) {
-                try {
-                    Thread.sleep(500);
-                    for (Gyro g : curList) {
-                        if (g.getRoute().get(0).getFloor() != level)
-                            continue;
-                        processTrajectory(g);
-                    }
-                    System.out.println("rendered\n");
-                    eventFier.fire();
-                } catch (Exception e) {
-                    System.out.println("hey\n");
-                    e.printStackTrace();
-//                Main.getInstance().addResult(new LinkedList<Gyro>()); // Assuming I want to know that an invocation failed
-                }
             }
         }
 

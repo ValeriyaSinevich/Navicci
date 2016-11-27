@@ -22,9 +22,9 @@ public class Position {
     }
 
     public final static Position subtract(Position a, Position b) {
-        if (a.getFloor() != b.getFloor()) {
-            System.out.println("can't subtract\n");
-        }
+//        if (a.getFloor() != b.getFloor()) {
+//            System.out.println("can't subtract\n");
+//        }
         return new Position(a.getX() - b.getX(), a.getY() - b.getY(), a.getFloor());
     }
 
