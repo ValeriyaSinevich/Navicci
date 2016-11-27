@@ -180,19 +180,26 @@ public class Controller implements Initializable {
         EventHandler<ActionEvent> fireEvent = new EventHandler<ActionEvent>() {
             public void handle(final javafx.event.ActionEvent event) {
 //                gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                List<java.awt.Color> cs = new LinkedList<>();
+                cs.add(java.awt.Color.RED);
+                cs.add(java.awt.Color.BLUE);
+                cs.add(java.awt.Color.YELLOW);
+                cs.add(java.awt.Color.GREEN);
+                cs.add(java.awt.Color.BLACK);
                 BufferedImage img = SwingFXUtils.fromFXImage(mapImage, null);
                 Graphics2D g2 = img.createGraphics();
-                g2.setColor(java.awt.Color.RED);
                 g2.setStroke(new BasicStroke(4));
 
+                int k = 0;
                 for (Gyro g : curList) {
+                    g2.setColor(cs.get(k));
                     if (g.getRoute().get(0).getFloor() != level) {
                         continue;
                     }
                     drawRoute(g, g2);
+                    k = (k + 1) % cs.size();
                 }
                 Image imgS = SwingFXUtils.toFXImage(img, null);
-//        mapImage = imgS;
                 map.setImage(imgS);
                 System.out.println("pictured\n");
             }

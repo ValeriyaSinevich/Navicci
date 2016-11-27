@@ -20,6 +20,13 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+//    (60.484129, 15.418381), (60.484351, 15.417935)
+
+
+//    393.5325 - x1
+//            220.91250000000002 - y1
+//            484.98 - y1
+//            314.415 - y2
 
 
 
@@ -29,7 +36,9 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 final class RunnableRequester implements Runnable {
 
-    private Double scale = (393.5325 - 484.98) / (60.484129 - 60.484351);
+    private Double scaleX = (393.5325 - 484.98) / (15.418381 - 15.417935);
+    private Double scaleY = (220.91250000000002 - 314.415) / (60.484129 - 60.484351);
+    private Double moduleScale = Position.calculateDistance(new Position(scaleX, scaleY, 0));
 
     private Position startGeo;
     private Position startPix;
@@ -47,7 +56,8 @@ final class RunnableRequester implements Runnable {
     }
 
     private Position translateCoordinates(Position posGeo) {
-        return Position.sum(startPix, Position.mult(Position.subtract(posGeo, startGeo), scale));
+        Position vector = Position.subtract(posGeo, startGeo);
+        return Position.sum(startPix, new Position(vector.getX() * scaleX, vector.getY() * scaleY, 0));
     }
 
 
@@ -61,7 +71,7 @@ final class RunnableRequester implements Runnable {
             Double floor_c = Double.parseDouble(obj.get("floor").toString());
             if (route != null) {
                 Gyro newG = new Gyro();
-                Double speed =  Double.parseDouble(obj.get("speed").toString()) * scale / 3 / 10;
+                Double speed =  Double.parseDouble(obj.get("speed").toString()) * moduleScale / 3 / 10;
                 newG.setSpeed(speed);
                 List<Position> rout = new LinkedList<>();
                 rout.add(translateCoordinates(new Position(x_c, y_c,
