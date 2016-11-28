@@ -36,7 +36,7 @@
             <Button fx:id="eventFier" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="0.0" prefWidth="0.0" text="Button" GridPane.halignment="RIGHT" GridPane.rowIndex="2" GridPane.valignment="BOTTOM" />
          </children>
       </GridPane>
-      <StackPane fx:id="stackPane" prefHeight="960.0" prefWidth="1600.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
+      <StackPane fx:id="stackPane" prefHeight="1200.0" prefWidth="1800.0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
          <children>
             <ImageView fx:id="map" fitHeight="960.0" fitWidth="1500.0" pickOnBounds="true" preserveRatio="true" />
             <Canvas fx:id="canvas" height="387.0" width="501.0" />
